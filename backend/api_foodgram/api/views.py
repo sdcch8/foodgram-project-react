@@ -1,18 +1,20 @@
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
-from misc.models import Subscription
+from misc.models import Favorite, ShoppingCart, Subscription
+from misc.serializers import FavoriteSerializer
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
                           SubscriptionSerializer, CreateRecipeSerializer,
-                          TagSerializer)
+                          ShortRecipeSerializer, TagSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -64,7 +66,7 @@ class IngredientViewSet(ListRetrieveViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
 
-    filter_backends = (filters.DjangoFilterBackend, )
+    filter_backends = [filters.DjangoFilterBackend, ]
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
@@ -147,10 +149,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if not user.favorite.filter(recipe_id=pk).exists():
                 obj = user.favorite.create(recipe_id=pk)
                 obj.save()
-                return Response(status=status.HTTP_201_CREATED)
+                recipe_serializer = ShortRecipeSerializer(self.get_object())
+                return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
             if user.favorite.filter(recipe_id=pk).exists():
                 obj = user.favorite.filter(recipe_id=pk)
                 obj.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    # @action(detail=True, methods=['get', 'post'])
+    # def favorite(self, request, pk=None):
+    #     data = {'user': request.user.id, 'recipe': pk}
+    #     serializer = FavoriteSerializer(data=data)
+    #     serializer.is_valid(raise_exception=True)
+    #     if not request.user.favorite.filter(recipe_id=pk).exists():
+    #         serializer.save()
+    #         recipe_serializer = ShortRecipeSerializer(self.get_object())
+    #         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    # @favorite.mapping.delete
+    # def favorite_delete(self, request, pk=None):
+    #     if request.user.favorite.filter(recipe_id=pk).exists():
+    #         obj = get_object_or_404(Favorite, user=request.user.id, recipe__id=pk)
+    #         obj.delete()
+    #         return Response(status=status.HTTP_204_NO_CONTENT)
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)

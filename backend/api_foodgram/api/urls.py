@@ -15,8 +15,4 @@ urlpatterns = [
     path('', include('djoser.urls')),
     path('', include(router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
-
-    # url(r'^users/$', UserViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # url(r'^users/(?P<pk>\d+)/', UserViewSet.as_view({'get': 'retrieve'})),
-
 ]

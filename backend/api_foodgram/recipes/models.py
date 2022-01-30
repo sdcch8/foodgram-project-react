@@ -47,6 +47,12 @@ class Recipe(models.Model):
         through='RecipeIngredient'
     )
     cooking_time = models.IntegerField()
+    pub_date = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
 
 
 class RecipeTag(models.Model):
@@ -67,7 +73,8 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE
     )
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.SET_NULL,
+        Ingredient,
+        on_delete=models.SET_NULL,
         null=True
     )
     amount = models.IntegerField()
