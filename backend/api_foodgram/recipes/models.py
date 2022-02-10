@@ -16,15 +16,21 @@ class Tag(models.Model):
         unique=True,
     )
 
+    def __str__(self):
+        return f'{self.name}, {self.slug}'
+
 
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=200,
-        unique=True,
+        unique=False
     )
     measurement_unit = models.CharField(
-        max_length=200,
+        max_length=200
     )
+
+    def __str__(self):
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -46,6 +52,9 @@ class Recipe(models.Model):
         Ingredient,
         through='RecipeIngredient'
     )
+    image = models.ImageField(
+        upload_to='recipes/images/'
+    )
     cooking_time = models.IntegerField()
     pub_date = models.DateTimeField(
         auto_now_add=True
@@ -53,6 +62,9 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return f'{self.author}, {self.name}'
 
 
 class RecipeTag(models.Model):

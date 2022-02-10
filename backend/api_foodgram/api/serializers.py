@@ -1,3 +1,8 @@
+import base64
+import uuid
+
+from django.core.files.base import ContentFile
+from django.forms.fields import ImageField
 from rest_framework import serializers
 
 from recipes.models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
@@ -70,6 +75,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(
         source='recipeingredient_set', many=True)
 
+    image = ImageField()
+
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -79,6 +86,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'author',
                   'tags',
                   'ingredients',
+                  'image',
                   'is_favorited',
                   'is_in_shopping_cart',
                   'name',
@@ -99,9 +107,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
+    image = ImageField()
+
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -145,6 +155,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return obj.author.following.filter(user=request.user).exists()
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        image_b64 = data
+        file_name = str(uuid.uuid4())
+        format, imgstr = image_b64.split(';base64,')
+        ext = format.split('/')[-1]
+        return ContentFile(base64.b64decode(imgstr),
+                           name=file_name + '.' + ext)
+
+
 class CreateRecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     tags = serializers.PrimaryKeyRelatedField(many=True,
@@ -152,12 +172,15 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     ingredients = RecipeIngredientSerializer(
         source='recipeingredient_set', many=True)
 
+    image = Base64ImageField()
+
     class Meta:
         model = Recipe
         fields = ('id',
                   'author',
                   'tags',
                   'ingredients',
+                  'image',
                   'name',
                   'text',
                   'cooking_time')

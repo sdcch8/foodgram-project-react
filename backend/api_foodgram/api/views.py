@@ -1,4 +1,5 @@
 from django.db.models import Sum
+from django.apps import apps
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
@@ -7,30 +8,33 @@ from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
-from misc.models import Favorite, ShoppingCart, Subscription
-from misc.serializers import FavoriteSerializer
+from misc.models import Subscription
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsOwnerOrReadOnly
-from .serializers import (IngredientSerializer, RecipeSerializer,
-                          SubscriptionSerializer, CreateRecipeSerializer,
+from .serializers import (CreateRecipeSerializer, IngredientSerializer,
+                          RecipeSerializer, SubscriptionSerializer,
                           ShortRecipeSerializer, TagSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    @action(detail=True, methods=['get', 'delete'])
+    @action(detail=True, methods=['get', 'post'])
     def subscribe(self, request, pk=None):
         user = request.user
-        if request.method == 'GET':
-            if not user.follower.filter(author_id=pk).exists():
-                obj = user.follower.create(author_id=pk)
-                obj.save()
-                return Response(status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if user.follower.filter(author_id=pk).exists():
-                obj = user.follower.filter(author_id=pk)
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        if (not user.follower.filter(author_id=pk).exists()
+                and user.id != int(pk)):
+            obj = user.follower.create(author_id=pk)
+            obj.save()
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @subscribe.mapping.delete
+    def subscribe_delete(self, request, pk=None):
+        user = request.user
+        if user.follower.filter(author_id=pk).exists():
+            obj = user.follower.filter(author_id=pk)
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -127,52 +131,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=['get', 'delete'])
-    def shopping_cart(self, request, pk=None):
-        user = request.user
-        if request.method == 'GET':
-            if not user.shopping_cart.filter(recipe_id=pk).exists():
-                obj = user.shopping_cart.create(recipe_id=pk)
-                obj.save()
-                return Response(status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if user.shopping_cart.filter(recipe_id=pk).exists():
-                obj = user.shopping_cart.filter(recipe_id=pk)
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
+    def add_recipe(self, model_name, request, pk=None):
+        model = apps.get_model('misc', model_name)
+        if not model.objects.filter(user_id=request.user.id,
+                                    recipe_id=pk).exists():
+            obj = model.objects.create(user_id=request.user.id, recipe_id=pk)
+            obj.save()
+            recipe_serializer = ShortRecipeSerializer(self.get_object())
+            return Response(recipe_serializer.data,
+                            status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['get', 'delete'])
+    def delete_recipe(self, model_name, request, pk=None):
+        model = apps.get_model('misc', model_name)
+        if model.objects.filter(user_id=request.user.id,
+                                recipe_id=pk).exists():
+            obj = get_object_or_404(model, user=request.user.id, recipe__id=pk)
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get', 'post'])
     def favorite(self, request, pk=None):
-        user = request.user
-        if request.method == 'GET':
-            if not user.favorite.filter(recipe_id=pk).exists():
-                obj = user.favorite.create(recipe_id=pk)
-                obj.save()
-                recipe_serializer = ShortRecipeSerializer(self.get_object())
-                return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if user.favorite.filter(recipe_id=pk).exists():
-                obj = user.favorite.filter(recipe_id=pk)
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.add_recipe('Favorite', request, pk)
 
-    # @action(detail=True, methods=['get', 'post'])
-    # def favorite(self, request, pk=None):
-    #     data = {'user': request.user.id, 'recipe': pk}
-    #     serializer = FavoriteSerializer(data=data)
-    #     serializer.is_valid(raise_exception=True)
-    #     if not request.user.favorite.filter(recipe_id=pk).exists():
-    #         serializer.save()
-    #         recipe_serializer = ShortRecipeSerializer(self.get_object())
-    #         return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+    @favorite.mapping.delete
+    def favorite_delete(self, request, pk=None):
+        return self.delete_recipe('Favorite', request, pk)
 
-    # @favorite.mapping.delete
-    # def favorite_delete(self, request, pk=None):
-    #     if request.user.favorite.filter(recipe_id=pk).exists():
-    #         obj = get_object_or_404(Favorite, user=request.user.id, recipe__id=pk)
-    #         obj.delete()
-    #         return Response(status=status.HTTP_204_NO_CONTENT)
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['get', 'post'])
+    def shopping_cart(self, request, pk=None):
+        return self.add_recipe('ShoppingCart', request, pk)
+
+    @shopping_cart.mapping.delete
+    def shopping_cart_delete(self, request, pk=None):
+        return self.delete_recipe('ShoppingCart', request, pk)

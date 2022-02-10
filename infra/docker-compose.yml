@@ -7,11 +7,41 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
+
+  db:
+    image: postgres:12.4
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  backend:
+    build:
+      context: ../backend/api_foodgram
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - static_value:/backend/api_foodgram/static/
+      - media_value:/backend/api_foodgram/media/
+    env_file:
+      - ./.env
+
   nginx:
     image: nginx:1.19.3
     ports:
       - "80:80"
     volumes:
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+    depends_on:
+      - frontend
+      - db
+      - backend
+
+volumes:
+  static_value:
+  media_value:
+  postgres_data:
