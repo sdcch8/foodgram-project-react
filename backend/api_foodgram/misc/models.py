@@ -16,6 +16,10 @@ class ShoppingCart(models.Model):
         related_name='shopping_cart',
     )
 
+    class Meta:
+        verbose_name = 'Корзина покупок'
+        verbose_name_plural = 'Корзина покупок'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -29,6 +33,14 @@ class Favorite(models.Model):
         related_name='favorite',
     )
 
+    class Meta:
+        models.UniqueConstraint(
+            fields=['user', 'recipe'],
+            name='Favorite unique constraint'
+        )
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
 
 class Subscription(models.Model):
     user = models.ForeignKey(
@@ -41,4 +53,11 @@ class Subscription(models.Model):
         on_delete=models.CASCADE,
         related_name='following',
     )
-     
+
+    class Meta:
+        models.UniqueConstraint(
+            fields=['user', 'author'],
+            name='Subscription unique constraint'
+        )
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

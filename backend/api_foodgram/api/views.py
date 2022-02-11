@@ -1,6 +1,4 @@
-from django.db.models import Sum
 from django.apps import apps
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status, viewsets
@@ -9,12 +7,13 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 
 from misc.models import Subscription
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import Ingredient, Recipe, Tag
 from .filters import IngredientFilter, RecipeFilter
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           RecipeSerializer, SubscriptionSerializer,
                           ShortRecipeSerializer, TagSerializer)
+from .utils import download_shopping_cart
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -104,32 +103,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             self.permission_classes = [permissions.AllowAny, ]
         if self.action == 'destroy' or self.action == 'update':
-            self.permission_classes = [IsOwnerOrReadOnly, ]
+            self.permission_classes = [IsAuthorOrReadOnly, ]
         return super().get_permissions()
 
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=self.request.user
-        )
-
-        ingredients = (ingredients.order_by('ingredient__name')
-                                  .values('ingredient__name',
-                                          'ingredient__measurement_unit')
-                                  .annotate(amount=Sum('amount'))
-                       )
-
-        export = []
-        for ingredient in ingredients:
-            name = ingredient['ingredient__name']
-            measurement_unit = ingredient['ingredient__measurement_unit']
-            amount = ingredient['amount']
-            export.append(f'{name}: {amount} {measurement_unit}\n')
-
-        response = HttpResponse(export, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="list.txt"'
-
-        return response
+        return download_shopping_cart(self, request)
 
     def add_recipe(self, model_name, request, pk=None):
         model = apps.get_model('misc', model_name)

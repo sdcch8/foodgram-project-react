@@ -7,7 +7,7 @@ from recipes.models import Ingredient, Tag
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        with open('recipes/data/ingredients.csv') as f:
+        with open('data/ingredients.csv') as f:
             reader = csv.reader(f)
             for row in reader:
                 name, measurement_unit = row
@@ -15,7 +15,7 @@ class Command(BaseCommand):
                     name=name, measurement_unit=measurement_unit
                 )
 
-        with open('recipes/data/tags.csv') as f:
+        with open('data/tags.csv') as f:
             reader = csv.reader(f)
             for row in reader:
                 name, color, slug = row

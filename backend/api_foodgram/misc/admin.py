@@ -4,15 +4,15 @@ from .models import Favorite, ShoppingCart, Subscription
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
+    list_display = ('id', 'user', 'recipe')
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
+    list_display = ('id', 'user', 'recipe')
 
 
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author')
+    list_display = ('id', 'user', 'author')
 
 
 admin.site.register(Favorite, FavoriteAdmin)

@@ -23,9 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_subscribed')
         extra_kwargs = {'password': {'write_only': True}}
 
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
@@ -141,11 +138,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         context = {'request': request}
         recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit:
-            queryset = Recipe.objects.filter(
-                author=obj.author)[:int(recipes_limit)]
-        else:
-            queryset = Recipe.objects.filter(author=obj.author)
+        queryset = Recipe.objects.filter(
+            author=obj.author)[:int(recipes_limit) or None]
         return ShortRecipeSerializer(queryset, many=True, context=context).data
 
     def get_is_subscribed(self, obj):
