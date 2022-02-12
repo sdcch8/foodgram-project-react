@@ -186,15 +186,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return value
 
     def create_tags(self, recipe, tags):
-        objs = []
-        for tag in tags:
-            objs.append(RecipeTag(tag_id=tag.id, recipe_id=recipe.id))
+        objs = [RecipeTag(tag_id=tag.id, recipe_id=recipe.id) for tag in tags]
         RecipeTag.objects.bulk_create(objs)
 
     def create_ingredients(self, recipe, ingredients):
-        objs = []
-        for ingredient in ingredients:
-            objs.append(RecipeIngredient(**ingredient, recipe_id=recipe.id))
+        objs = ([RecipeIngredient(**ingredient, recipe_id=recipe.id)
+                for ingredient in ingredients])
         RecipeIngredient.objects.bulk_create(objs)
 
     def create(self, validated_data):
