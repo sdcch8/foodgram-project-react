@@ -11,8 +11,8 @@ from recipes.models import Ingredient, Recipe, Tag
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
-                          RecipeSerializer, SubscriptionSerializer,
-                          ShortRecipeSerializer, TagSerializer)
+                          RecipeSerializer, ShortRecipeSerializer,
+                          SubscriptionSerializer, TagSerializer)
 from .utils import download_shopping_cart
 
 
