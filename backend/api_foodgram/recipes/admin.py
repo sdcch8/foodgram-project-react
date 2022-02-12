@@ -17,7 +17,7 @@ class TagInLineAdmin(admin.TabularInline):
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'measurement_unit')
-    search_fields = ('name')
+    search_fields = ('name', )
 
 
 class RecipeIngredientAdmin(admin.ModelAdmin):
