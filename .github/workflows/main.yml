@@ -32,7 +32,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-        working-directory: ./backend/api_foodgram/
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to Docker 
