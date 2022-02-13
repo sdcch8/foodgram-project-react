@@ -14,7 +14,8 @@ from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           RecipeSerializer, ShortRecipeSerializer,
-                          SubscriptionSerializer, TagSerializer)
+                          SubscriptionSerializer, TagSerializer,
+                          UserSerializer)
 from .utils import download_shopping_cart
 
 User = get_user_model()
@@ -31,8 +32,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 and user.id != int(pk)):
             obj = user.follower.create(author_id=pk)
             obj.save()
-            serializer = SubscriptionSerializer(
-                {'author': author}, context={'request': request})
+            serializer = UserSerializer(author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
