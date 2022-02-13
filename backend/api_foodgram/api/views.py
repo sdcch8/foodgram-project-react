@@ -109,9 +109,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(instance_serializer.data)
 
     def get_permissions(self):
-        if self.action == 'list':
+        if self.action in ['list', 'retrieve']:
             self.permission_classes = [permissions.AllowAny, ]
-        if self.action == 'destroy' or self.action == 'update':
+        if self.action in ['destroy', 'update']:
             self.permission_classes = [IsAuthorOrReadOnly, ]
         return super().get_permissions()
 
