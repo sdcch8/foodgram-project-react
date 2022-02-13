@@ -32,7 +32,7 @@ class UserViewSet(viewsets.ModelViewSet):
             obj = user.follower.create(author_id=pk)
             obj.save()
             serializer = SubscriptionSerializer(
-                author, context={'request': request})
+                author=author, context={'request': request})
             return Response(serializer.data,
                             status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
