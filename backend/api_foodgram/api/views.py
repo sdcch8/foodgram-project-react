@@ -26,15 +26,14 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get', 'post'])
     def subscribe(self, request, pk=None):
         user = request.user
-        author = get_object_or_404(User, id=pk)
+        # author = get_object_or_404(User, id=pk)
         if (not user.follower.filter(author_id=pk).exists()
                 and user.id != int(pk)):
             obj = user.follower.create(author_id=pk)
             obj.save()
-            serializer = SubscriptionSerializer(
-                author=author, context={'request': request})
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
+            # serializer = SubscriptionSerializer(
+            # author=author, context={'request': request})
+            return Response(status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @subscribe.mapping.delete
