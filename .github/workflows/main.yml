@@ -60,9 +60,13 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          script: | 
-            sudo docker-compose stop
-            rm -rf ./foodgram-project-react
+          script: |
+            if [ -d "./foodgram-project-react/infra/" ]; then
+              cd ./foodgram-project-react/infra/
+              sudo docker-compose stop
+              cd ~
+              rm -rf ./foodgram-project-react
+            fi
             git clone git@github.com:sdcch8/foodgram-project-react.git
             cd ./foodgram-project-react/infra/
             sudo docker pull sdcch8/foodgram_backend:latest
