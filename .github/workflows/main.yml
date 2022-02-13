@@ -61,16 +61,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            if [ -d "./foodgram-project-react/infra/" ]; then
-              cd ./foodgram-project-react/infra/
-              sudo docker-compose stop
-              cd ~
-              rm -rf ./foodgram-project-react
-            fi
-            git clone git@github.com:sdcch8/foodgram-project-react.git
             cd ./foodgram-project-react/infra/
+            sudo docker-compose stop
+            cd ./foodgram-project-react/
+            git pull
             sudo docker pull sdcch8/foodgram_backend:latest
             touch .env
+            cd ./foodgram-project-react/infra/
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
