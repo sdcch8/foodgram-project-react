@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from misc.models import Subscription
 from recipes.models import Ingredient, Recipe, Tag
+from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
@@ -18,6 +19,8 @@ from .utils import download_shopping_cart
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+
     @action(detail=True, methods=['get', 'post'])
     def subscribe(self, request, pk=None):
         user = request.user
