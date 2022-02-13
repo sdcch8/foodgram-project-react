@@ -23,6 +23,9 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_subscribed')
         extra_kwargs = {'password': {'write_only': True}}
 
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
