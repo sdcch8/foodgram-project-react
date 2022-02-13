@@ -1,4 +1,5 @@
 from django.apps import apps
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status, viewsets
@@ -8,7 +9,6 @@ from rest_framework.response import Response
 
 from misc.models import Subscription
 from recipes.models import Ingredient, Recipe, Tag
-from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnly
@@ -16,6 +16,9 @@ from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           RecipeSerializer, ShortRecipeSerializer,
                           SubscriptionSerializer, TagSerializer)
 from .utils import download_shopping_cart
+
+
+User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
