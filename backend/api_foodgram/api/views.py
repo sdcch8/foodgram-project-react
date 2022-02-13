@@ -25,7 +25,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 and user.id != int(pk)):
             obj = user.follower.create(author_id=pk)
             obj.save()
-            return Response(status=status.HTTP_201_CREATED)
+            instance_serializer = SubscriptionSerializer(self.get_object())
+            return Response(instance_serializer.data,
+                            status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @subscribe.mapping.delete
