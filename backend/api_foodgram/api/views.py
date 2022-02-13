@@ -17,7 +17,6 @@ from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           SubscriptionSerializer, TagSerializer)
 from .utils import download_shopping_cart
 
-
 User = get_user_model()
 
 
