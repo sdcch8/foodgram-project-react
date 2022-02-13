@@ -68,6 +68,12 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
+    def validate_amount(self, value):
+        if value < 1:
+            raise serializers.ValidationError(
+                'Количество должно быть >= 1')
+        return value
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)

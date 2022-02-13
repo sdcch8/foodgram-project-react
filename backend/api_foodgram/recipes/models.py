@@ -106,7 +106,9 @@ class RecipeIngredient(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
-    amount = models.IntegerField()
+    amount = models.IntegerField(
+        validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         verbose_name = 'Ингредиенты рецепта'
