@@ -50,9 +50,7 @@ class SubscriptionsViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
 
     def get_queryset(self):
-        return Subscription.objects.filter(
-            # author__following__user=self.request.user)
-            user=self.request.user)
+        return Subscription.objects.filter(user=self.request.user)
 
 
 class ListRetrieveViewSet(ListAPIView, RetrieveAPIView,
