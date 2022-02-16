@@ -1,8 +1,11 @@
 Адрес сервера, на котором развернут проект: http://62.84.118.66/
 
 Пользователи:
+
 admin@test.com / Qweasd12#
+
 user1@test.com / Qweasd12#
+
 user2@test.com / Qweasd12#
 
 
